@@ -1,0 +1,28 @@
+{
+  "name": "mgp",
+  "version": "1.0.0",
+  "description": "Mon Gestionnaire de Projet",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bayokassim4-png/MGP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bayokassim4-png/MGP/issues"
+  },
+  "homepage": "https://github.com/bayokassim4-png/MGP#readme",
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "prisma": "^6.19.3"
+  }
+}
