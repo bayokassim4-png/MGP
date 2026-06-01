@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  PLANIFIE
+  EN_COURS
+  CLOTURE
+  ARCHIVE
+}
+
+enum UserStatus {
+  ACTIF
+  INACTIF
+  INVITE
+}
+
+model Organisation {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String    @unique
+  country     String?
+  sector      String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+  projects    Project[]
+
+  @@map("organisations")
+}
+
+model User {
+  id               String        @id @default(uuid()) @db.Uuid
+  organisation     Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisationId   String        @db.Uuid
+  email            String        @unique
+  fullName         String?
+  phone            String?
+  status           UserStatus    @default(ACTIF)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  projectUsers     ProjectUser[]
+  createdProjects  Project[]     @relation("ProjectCreator")
+
+  @@index([organisationId])
+  @@map("users")
+}
+
+model Role {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String        @unique
+  description String?
+  scope       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  members     ProjectUser[]
+
+  @@map("roles")
+}
+
+model Project {
+  id             String         @id @default(uuid()) @db.Uuid
+  organisation   Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisationId String         @db.Uuid
+  name           String
+  code           String
+  description    String?
+  status         ProjectStatus  @default(EN_COURS)
+  currency       String?
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  creator        User?          @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId      String?        @db.Uuid
+  projectUsers   ProjectUser[]
+
+  @@unique([organisationId, code])
+  @@index([organisationId])
+  @@map("projects")
+}
+
+model ProjectUser {
+  id          String   @id @default(uuid()) @db.Uuid
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @db.Uuid
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId      String   @db.Uuid
+  isOwner     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, userId])
+  @@map("project_users")
+}
