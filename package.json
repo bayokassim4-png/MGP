@@ -1,31 +1,31 @@
 {
-  "name": "mgp",
+  "name": "mgp-backend",
   "version": "1.0.0",
-  "description": "Mon Gestionnaire de Projet",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bayokassim4-png/MGP.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/bayokassim4-png/MGP/issues"
-  },
-  "homepage": "https://github.com/bayokassim4-png/MGP#readme",
   "dependencies": {
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/core": "^11.1.24",
+    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
     "@prisma/client": "^6.19.3",
-    "prisma": "^6.19.3"
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "tsx": "^4.22.4"
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.24",
+    "prisma": "^6.19.3",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.2"
   }
 }

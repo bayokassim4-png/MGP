@@ -80,6 +80,7 @@ model Project {
   creator        User?          @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId      String?        @db.Uuid
   projectUsers   ProjectUser[]
+  budgets        Budget[]
 
   @@unique([organisationId, code])
   @@index([organisationId])
@@ -100,4 +101,20 @@ model ProjectUser {
 
   @@unique([projectId, userId])
   @@map("project_users")
+}
+
+model Budget {
+  id             String    @id @default(uuid()) @db.Uuid
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String    @db.Uuid
+
+  name           String
+  amount         Decimal   @db.Decimal(18,2)
+  consumedAmount Decimal   @default(0) @db.Decimal(18,2)
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([projectId])
+  @@map("budgets")
 }
