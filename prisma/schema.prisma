@@ -80,6 +80,7 @@ model Project {
   creator        User?          @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId      String?        @db.Uuid
   projectUsers   ProjectUser[]
+  components     Component[]
   budgets        Budget[]
 
   @@unique([organisationId, code])
@@ -101,6 +102,38 @@ model ProjectUser {
 
   @@unique([projectId, userId])
   @@map("project_users")
+}
+
+model Component {
+  id          String     @id @default(uuid()) @db.Uuid
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    String     @db.Uuid
+
+  name         String
+  description  String?
+
+  activities   Activity[]
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([projectId])
+  @@map("components")
+}
+
+model Activity {
+  id           String      @id @default(uuid()) @db.Uuid
+  component    Component   @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  componentId  String      @db.Uuid
+
+  name         String
+  description  String?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([componentId])
+  @@map("activities")
 }
 
 model Budget {
