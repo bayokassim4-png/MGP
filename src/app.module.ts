@@ -11,9 +11,11 @@ import { OrganisationsModule } from './organisations/organisations.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { ComponentsModule } from './components/components.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { ExpensesModule } from './expenses/expenses.module';
+import { ApprovalsModule } from './approvals/approvals.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, ProjectsModule, OrganisationsModule, BudgetsModule, ComponentsModule, ActivitiesModule],
+  imports: [PrismaModule, UsersModule, AuthModule, ProjectsModule, OrganisationsModule, BudgetsModule, ComponentsModule, ActivitiesModule, ExpensesModule, ApprovalsModule],
   controllers: [AppController, HealthController, HealthDbController],
   providers: [AppService],
 })

@@ -20,33 +20,48 @@ enum UserStatus {
   INVITE
 }
 
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum ApprovalLevel {
+  CHEF_PROJET
+  DAF
+  DG
+}
+
 model Organisation {
-  id          String    @id @default(uuid()) @db.Uuid
-  name        String
-  slug        String    @unique
-  country     String?
-  sector      String?
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  users       User[]
-  projects    Project[]
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String    @unique
+  country   String?
+  sector    String?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  users     User[]
+  projects  Project[]
 
   @@map("organisations")
 }
 
 model User {
-  id               String        @id @default(uuid()) @db.Uuid
-  organisation     Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  organisationId   String        @db.Uuid
-  email            String        @unique
-  fullName         String?
-  phone            String?
-  status           UserStatus    @default(ACTIF)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  projectUsers     ProjectUser[]
-  createdProjects  Project[]     @relation("ProjectCreator")
+  id              String        @id @default(uuid()) @db.Uuid
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisationId  String        @db.Uuid
+  email           String        @unique
+  fullName        String?
+  phone           String?
+  status          UserStatus    @default(ACTIF)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  projectUsers    ProjectUser[]
+  createdProjects Project[]     @relation("ProjectCreator")
+  approvals       Approval[]
 
   @@index([organisationId])
   @@map("users")
@@ -65,20 +80,20 @@ model Role {
 }
 
 model Project {
-  id             String         @id @default(uuid()) @db.Uuid
-  organisation   Organisation   @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  organisationId String         @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisationId String        @db.Uuid
   name           String
   code           String
   description    String?
-  status         ProjectStatus  @default(EN_COURS)
+  status         ProjectStatus @default(EN_COURS)
   currency       String?
   startDate      DateTime?
   endDate        DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  creator        User?          @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  creatorId      String?        @db.Uuid
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  creator        User?         @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId      String?       @db.Uuid
   projectUsers   ProjectUser[]
   components     Component[]
   budgets        Budget[]
@@ -88,65 +103,108 @@ model Project {
   @@map("projects")
 }
 
+model Expense {
+  id String @id @default(uuid()) @db.Uuid
+
+  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budgetId String @db.Uuid
+
+  description String
+  amount      Decimal @db.Decimal(18, 2)
+
+  status ExpenseStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  approvals Approval[]
+
+  @@index([budgetId])
+  @@map("expenses")
+}
+
+model Approval {
+  id String @id @default(uuid()) @db.Uuid
+
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  expenseId String  @db.Uuid
+
+  approver   User   @relation(fields: [approverId], references: [id], onDelete: Cascade)
+  approverId String @db.Uuid
+
+  level ApprovalLevel
+
+  approved Boolean?
+
+  comment String?
+
+  createdAt DateTime @default(now())
+
+  @@index([expenseId])
+  @@index([approverId])
+  @@map("approvals")
+}
+
 model ProjectUser {
-  id          String   @id @default(uuid()) @db.Uuid
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String   @db.Uuid
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId      String   @db.Uuid
-  isOwner     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String   @db.Uuid
+  isOwner   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([projectId, userId])
   @@map("project_users")
 }
 
 model Component {
-  id          String     @id @default(uuid()) @db.Uuid
-  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId    String     @db.Uuid
+  id        String  @id @default(uuid()) @db.Uuid
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String  @db.Uuid
 
-  name         String
-  description  String?
+  name        String
+  description String?
 
-  activities   Activity[]
+  activities Activity[]
 
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([projectId])
   @@map("components")
 }
 
 model Activity {
-  id           String      @id @default(uuid()) @db.Uuid
-  component    Component   @relation(fields: [componentId], references: [id], onDelete: Cascade)
-  componentId  String      @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  componentId String    @db.Uuid
 
-  name         String
-  description  String?
+  name        String
+  description String?
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([componentId])
   @@map("activities")
 }
 
 model Budget {
-  id             String    @id @default(uuid()) @db.Uuid
-  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId      String    @db.Uuid
+  id        String  @id @default(uuid()) @db.Uuid
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String  @db.Uuid
 
   name           String
-  amount         Decimal   @db.Decimal(18,2)
-  consumedAmount Decimal   @default(0) @db.Decimal(18,2)
+  amount         Decimal @db.Decimal(18, 2)
+  consumedAmount Decimal @default(0) @db.Decimal(18, 2)
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
 
   @@index([projectId])
   @@map("budgets")
