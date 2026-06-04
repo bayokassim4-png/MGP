@@ -34,6 +34,41 @@ enum ApprovalLevel {
   DG
 }
 
+enum Quarter {
+  Q1
+  Q2
+  Q3
+  Q4
+}
+enum LogframeLevel {
+  OBJECTIF_GLOBAL
+  OBJECTIF_SPECIFIQUE
+  RESULTAT
+}
+
+enum RiskStatus {
+  OUVERT
+  EN_COURS
+  MAITRISE
+  FERME
+}
+
+enum ProcurementMethod {
+  AOI
+  AON
+  CONSULTANT
+  GRE_A_GRE
+  DEMANDE_COTATION
+}
+
+enum ProcurementStatus {
+  PLANIFIE
+  EN_COURS
+  ATTRIBUE
+  TERMINE
+  ANNULE
+}
+
 model Organisation {
   id        String    @id @default(uuid()) @db.Uuid
   name      String
@@ -97,6 +132,10 @@ model Project {
   projectUsers   ProjectUser[]
   components     Component[]
   budgets        Budget[]
+  ptbaEntries    Ptba[]
+  logframeEntries Logframe[]
+  risks           Risk[]
+  ppmEntries      Ppm[]
 
   @@unique([organisationId, code])
   @@index([organisationId])
@@ -145,6 +184,119 @@ model Approval {
   @@map("approvals")
 }
 
+model Ptba {
+  id              String      @id @default(uuid()) @db.Uuid
+
+  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String      @db.Uuid
+
+  component       Component?  @relation(fields: [componentId], references: [id], onDelete: SetNull)
+  componentId     String?     @db.Uuid
+
+  activity        Activity?   @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  activityId      String?     @db.Uuid
+
+  quarter         Quarter
+
+  responsible     String?
+
+  plannedBudget   Decimal     @db.Decimal(18,2)
+  actualBudget    Decimal     @default(0) @db.Decimal(18,2)
+
+  description     String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([projectId])
+  @@index([componentId])
+  @@index([activityId])
+
+  @@map("ptba")
+}
+
+model Logframe {
+  id                    String         @id @default(uuid()) @db.Uuid
+
+  project               Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId             String         @db.Uuid
+
+  level                 LogframeLevel
+
+  title                 String
+
+  indicator             String?
+  baseline              String?
+  target                String?
+
+  verificationSource    String?
+
+  assumptions           String?
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([projectId])
+
+  @@map("logframe")
+}
+
+model Risk {
+  id                 String       @id @default(uuid()) @db.Uuid
+
+  project            Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId          String       @db.Uuid
+
+  title              String
+  description        String?
+
+  probability        Int
+  impact             Int
+
+  criticality        Int
+
+  mitigationMeasure  String?
+
+  owner              String?
+
+  status             RiskStatus   @default(OUVERT)
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@index([projectId])
+
+  @@map("risks")
+}
+
+model Ppm {
+  id                String              @id @default(uuid()) @db.Uuid
+
+  project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId         String              @db.Uuid
+
+  title             String
+
+  method            ProcurementMethod
+
+  estimatedAmount   Decimal             @db.Decimal(18,2)
+
+  plannedDate       DateTime?
+
+  actualDate        DateTime?
+
+  responsible       String?
+
+  status            ProcurementStatus   @default(PLANIFIE)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([projectId])
+
+  @@map("ppm")
+}
+
 model ProjectUser {
   id        String   @id @default(uuid()) @db.Uuid
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -170,6 +322,7 @@ model Component {
   description String?
 
   activities Activity[]
+  ptbaEntries Ptba[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -188,6 +341,7 @@ model Activity {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  ptbaEntries Ptba[]
 
   @@index([componentId])
   @@map("activities")
