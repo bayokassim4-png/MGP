@@ -17,9 +17,10 @@ import { PtbaModule } from './ptba/ptba.module';
 import { LogframeModule } from './logframe/logframe.module';
 import { RisksModule } from './risks/risks.module';
 import { PpmModule } from './ppm/ppm.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, ProjectsModule, OrganisationsModule, BudgetsModule, ComponentsModule, ActivitiesModule, ExpensesModule, ApprovalsModule, PtbaModule, LogframeModule, RisksModule, PpmModule],
+  imports: [PrismaModule, UsersModule, AuthModule, ProjectsModule, OrganisationsModule, BudgetsModule, ComponentsModule, ActivitiesModule, ExpensesModule, ApprovalsModule, PtbaModule, LogframeModule, RisksModule, PpmModule, DashboardModule],
   controllers: [AppController, HealthController, HealthDbController],
   providers: [AppService],
 })
